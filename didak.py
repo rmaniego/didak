@@ -109,18 +109,18 @@ def analyze(directory, filename, testcase, sensitive):
             pass
     
     if script != "":
-        if sensitive == 1:
+        if sensitive == 0:
             script = script.lower()
         data = Maguro(testcase, delimiter="---")
         try:
             for item in data.unpack()[0].split("\n"):
                 if item.strip() != "":
-                    if sensitive == 1:
+                    if sensitive == 0:
                         item = item.lower()
                     key, value = item.split(" = ")
                     keywords.update({key.strip(): value.strip()})
             items = data.unpack()[1]
-            if sensitive == 1:
+            if sensitive == 0:
                 items = items.lower()
             results = csv(items)
         except:
@@ -157,7 +157,7 @@ def analyze(directory, filename, testcase, sensitive):
         score = 0
         test_results = get_results(f"{directory}/didak/test.py")
         metadata.update({"results": test_results})
-        if sensitive == 1:
+        if sensitive == 0:
             test_results = test_results.lower()
         results = list([x for x in results if len(x) > 0 and "".join(x) != ""])
         for result in results:
@@ -193,7 +193,34 @@ def csv(data):
     return table
 
 def remove_comments(line):
-    return line.split("#")[0]
+    double_quotes = line.count("\"") - line.count("\\\"")
+    single_quotes = line.count("'") - line.count("\\'")
+    
+    if double_quotes == 0 and single_quotes == 0:
+        return list(line.split("#"))[0]
+    
+    mod_double_quotes = double_quotes % 2
+    mod_single_quotes = single_quotes % 2        
+    
+    if mod_single_quotes == 0 and single_quotes > 0:
+        if "\"\"\"" not in line and "'" in line:
+            line = line.replace("\"", "\\\"").replace("'", "\"")
+    
+    cleaned = []
+    previous = ""
+    
+    quoted = False
+    skip = False
+    for character in line:
+        if not skip:
+            if character == "\"" and previous != "\\":
+                quoted = (not quoted)
+            if not quoted and character == "#":
+                skip = True
+        if not skip:
+            cleaned.append(character)
+        previous = character
+    return "".join(cleaned)
 
 def get_results(filepath):
     try:
