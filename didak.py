@@ -105,33 +105,13 @@ def analyze(directory, filename, testcase, sensitive):
                 if item.strip() != "":
                     if sensitive == 1:
                         item = item.lower()
-                    key, value = item.split("=")
+                    key, value = item.split(" = ")
                     keywords.update({key.strip(): value.strip()})
-            
             items = data.unpack()[1]
             if sensitive == 1:
                 items = items.lower()
-            
-            for item in items.split("\n"):
-                group = []
-                if item.strip() != "":
-                    word = []
-                    previous = ""
-                    quoted = False
-                    for character in item:
-                        if character == "\"" and previous != "\\":
-                            quoted = (not quoted)
-                            continue
-                        if not quoted and character == ",":
-                            group.append("".join(word))
-                            word = []
-                            continue
-                        previous = character
-                        word.append(character)
-                    group.append("".join(word))
-                results.append(group)
-        except Exception as e:
-            print(e)
+            results = csv(items)
+        except:
             pass
         used = []
         for line in script.split("\n"):
@@ -140,33 +120,63 @@ def analyze(directory, filename, testcase, sensitive):
                 if "input" not in line:
                     formatted.append(line)
                 else:
+                    found = False
                     for key, value in keywords.items():
+                        if found:
+                            break
                         if key not in used:
-                            if key in line:
-                                variable = line.split("=")[0].strip()
-                                formatted.append(f"{variable} = {value}")
-                                used.append(key)
+                            for search in csv(key)[0]:
+                                if search in line:
+                                    variable = line.split("=")[0]
+                                    formatted.append(f"{variable} = {value}")
+                                    used.append(key)
+                                    found = True
+                                    break
+                                    
         
-        with open(f"{directory}/didak/test.py", "w+", encoding="utf-8") as file:
+        with open(f"{directory}/didak/{filename}", "w+", encoding="utf-8") as file:
             file.write("\n".join(formatted))
         
         score = 0
-        test_results = get_results(f"{directory}/didak/test.py")
+        test_results = get_results(f"{directory}/didak/{filename}")
         metadata.update({"results": test_results})
         if sensitive == 1:
             test_results = test_results.lower()
-        results = list([x for x in results if len(x) > 0])
-        for line in test_results.split("\n"):
-            for result in results:
-                for variant in result:
-                    if variant in line:
-                        score += 1
-                        break
+        results = list([x for x in results if len(x) > 0 and "".join(x) != ""])
+        for result in results:
+            for variant in result:
+                if variant in test_results:
+                    score += 1
+                    break
         metadata.update({"score": score})
+        metadata.update({"max": len(results)})
     return metadata
 
+def csv(data):
+    table = []
+    for line in data.split("\n"):
+        row = []
+        if line.strip() != "":
+            cell = []
+            previous = ""
+            quoted = False
+            for character in line:
+                if character == "\"" and previous != "\\":
+                    quoted = (not quoted)
+                    continue
+                if not quoted and character == ",":
+                    row.append("".join(cell))
+                    cell = []
+                    continue
+                if quoted:
+                    cell.append(character)
+                previous = character
+            row.append("".join(cell))
+        table.append(row)
+    return table
+
 def remove_comments(line):
-    return line.split("#")[0].strip()
+    return line.split("#")[0]
 
 def get_results(filepath):
     try:
