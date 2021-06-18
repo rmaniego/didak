@@ -76,12 +76,24 @@ def didak(directory, testcase, identifier, sensitive=0, unzip=0, reset=0):
     
     count = 0
     analysis.reload()
-    for filename, metadata in analysis.items():
+    for filename, metadata in analysis.show().items():
         if identifier == "" or identifier in filename:
             count += 1
             score = metadata.get("score", 0)
             print(f"File #{count}: {filename}")
-            print(f" - {score}")
+            total_score = metadata.get("score", 0) / metadata.get("max", 1)
+            max_score = 1.0
+            common = ""
+            for filename2, metadata2 in analysis.show().items():
+                if filename != filename2:
+                    if common == "":
+                        temp = common_string(filename, filename2)
+                        if len(temp) >= 10:
+                            common = temp
+                    if common != "" and common in filename2:
+                        total_score += metadata2.get("score", 0) / metadata2.get("max", 1)
+                        max_score += 1
+            print(f" - Current: {score}, Total: {total_score}/{max_score}")
 
 def analyze(directory, filename, testcase, sensitive):
     metadata = {}
@@ -117,7 +129,7 @@ def analyze(directory, filename, testcase, sensitive):
         for line in script.split("\n"):
             line = remove_comments(line)
             if line != "":
-                if "input" not in line:
+                if ("input(" not in line):
                     formatted.append(line)
                 else:
                     found = False
@@ -132,13 +144,18 @@ def analyze(directory, filename, testcase, sensitive):
                                     used.append(key)
                                     found = True
                                     break
+                    if not found:
+                        # workaround only
+                        variable = line.split("=")[0]
+                        formatted.append(f"{variable} = 1")
+                        #formatted.append(line)
                                     
         
-        with open(f"{directory}/didak/{filename}", "w+", encoding="utf-8") as file:
+        with open(f"{directory}/didak/test.py", "w+", encoding="utf-8") as file:
             file.write("\n".join(formatted))
         
         score = 0
-        test_results = get_results(f"{directory}/didak/{filename}")
+        test_results = get_results(f"{directory}/didak/test.py")
         metadata.update({"results": test_results})
         if sensitive == 1:
             test_results = test_results.lower()
@@ -185,6 +202,20 @@ def get_results(filepath):
         return results
     except:
         return ""
+
+def common_string(original, compare, reverse=False):
+    if reverse:
+        original = "".join(list(reversed(original.replace(f".{extension}", "").strip())))
+        compare = "".join(list(reversed(compare.replace(f".{extension}", "").strip())))
+    common = []
+    limit = min((len(original), len(compare)))
+    for i in range(0, limit):
+        if original[i] != compare[i]:
+            break
+        common.append(original[i])
+    if reverse:
+        return "".join(list(reversed(common)))
+    return "".join(common)
 
 def validate(value, minimum, maximum, fallback):
     if not isinstance(value, int):
