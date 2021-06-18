@@ -132,23 +132,26 @@ def analyze(directory, filename, testcase, sensitive):
                 if ("input(" not in line):
                     formatted.append(line)
                 else:
-                    found = False
-                    for key, value in keywords.items():
-                        if found:
-                            break
-                        if key not in used:
-                            for search in csv(key)[0]:
-                                if search in line:
-                                    variable = line.split("=")[0]
-                                    formatted.append(f"{variable} = {value}")
-                                    used.append(key)
-                                    found = True
-                                    break
-                    if not found:
+                    if "=" in line:
+                        found = False
+                        for key, value in keywords.items():
+                            if found:
+                                break
+                            if key not in used:
+                                for search in csv(key)[0]:
+                                    if search in line:
+                                        variable = line.split("=")[0]
+                                        formatted.append(f"{variable} = {value}")
+                                        used.append(key)
+                                        found = True
+                                        break
+                        if not found:
+                            # workaround only
+                            variable = line.split("=")[0]
+                            formatted.append(f"{variable} = 1")
+                    else:
                         # workaround only
-                        variable = line.split("=")[0]
-                        formatted.append(f"{variable} = 1")
-                        #formatted.append(line)
+                        formatted.append(line.replace("input(", "print("))
                                     
         
         with open(f"{directory}/didak/test.py", "w+", encoding="utf-8") as file:
