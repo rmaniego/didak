@@ -109,8 +109,6 @@ def analyze(directory, filename, testcase, sensitive):
             pass
     
     if script != "":
-        if sensitive == 0:
-            script = script.lower()
         data = Maguro(testcase, delimiter="---")
         try:
             for item in data.unpack()[0].split("\n"):
@@ -139,7 +137,9 @@ def analyze(directory, filename, testcase, sensitive):
                                 break
                             if key not in used:
                                 for search in csv(key)[0]:
-                                    if search in line:
+                                    if search in line:                                        
+                                        if sensitive == 0:
+                                            line = line.lower()
                                         variable = line.split("=")[0]
                                         formatted.append(f"{variable} = {value}")
                                         used.append(key)
@@ -196,6 +196,7 @@ def csv(data):
     return table
 
 def remove_comments(line):
+    """
     double_quotes = line.count("\"") - line.count("\\\"")
     single_quotes = line.count("'") - line.count("\\'")
     
@@ -208,6 +209,7 @@ def remove_comments(line):
     if mod_single_quotes == 0 and single_quotes > 0:
         if "\"\"\"" not in line and "'" in line:
             line = line.replace("\"", "\\\"").replace("'", "\"")
+    """
     
     cleaned = []
     previous = ""
