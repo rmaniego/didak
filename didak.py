@@ -122,6 +122,7 @@ def analyze(directory, filename, testcase, sensitive):
         for line in script.split("\n"):
             line = line.rstrip()
             if line != "":
+                line = line.replace("print (", "print(")
                 line = line.replace("input (", "input(")
                 line = line.replace("while(", "while (")
                 line = indent_correction(remove_comments(line))
