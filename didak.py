@@ -70,6 +70,7 @@ def didak(directory, testcase, identifier, sensitive=0, unzip=0, reset=0):
         if identifier == "" or identifier in filename:
             count += 1
             score = metadata.get("score", 0)
+            max = metadata.get("max", 0)
             print(f"File #{count}: {filename}")
             total_score = metadata.get("score", 0) / metadata.get("max", 1)
             max_score = 1.0
@@ -83,7 +84,7 @@ def didak(directory, testcase, identifier, sensitive=0, unzip=0, reset=0):
                     if common != "" and common in filename2:
                         total_score += metadata2.get("score", 0) / metadata2.get("max", 1)
                         max_score += 1
-            print(f" - Current: {score}, Total: {total_score:,.2f}/{max_score:,.2f}")
+            print(f" - Current: {score} of {max}, Total: {total_score:,.2f}/{max_score:,.2f}")
 
 def analyze(directory, filename, testcase, sensitive):
     metadata = {}
@@ -133,6 +134,7 @@ def analyze(directory, filename, testcase, sensitive):
                     indents = get_indents(line, 1)
                     formatted.append(f"{indents}if didak_loop_counter{loop_counters} >= 100:")
                     indents = get_indents(line, 2)
+                    formatted.append(f"{indents}print(\"Reach the maximum limit of recursion.\")")
                     formatted.append(f"{indents}break")
                     indents = get_indents(line, 1)
                     formatted.append(f"{indents}didak_loop_counter{loop_counters} += 1")
