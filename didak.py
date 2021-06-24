@@ -186,11 +186,11 @@ def analyze(directory, filename, testcase, sensitive):
                 previous_indent = get_indents(line)
                 previous = list(line.strip().split(" "))[0].replace(":", "")
         
-        with open(f"{directory}/didak/{filename}.py", "w+", encoding="utf-8") as file:
+        with open(f"{directory}/didak/test.py", "w+", encoding="utf-8") as file:
             file.write("\n".join(formatted))
         
         score = 0
-        test_results = get_results(f"{directory}/didak/{filename}.py")
+        test_results = get_results(f"{directory}/didak/test.py")
         metadata.update({"results": test_results})
         if sensitive == 0:
             test_results = test_results.lower()
