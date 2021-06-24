@@ -1,26 +1,16 @@
 """
     (c) 2020 Rodney Maniego Jr.
-    Test runner
+    Didak
     MIT License
 """
-
-VERSION = "1.0.0"
-
-print(f"\nDidak v{VERSION}")
-
-print("\nLoading requirements...")
-print("Please wait...")
 
 import os
 import sys
 import zipfile
-import argparse
 import subprocess
 
 from arkivist import Arkivist
 from maguro import Maguro
-
-print("Done.")
 
 def didak(directory, testcase, identifier, sensitive=0, unzip=0, reset=0):
     
@@ -93,7 +83,7 @@ def didak(directory, testcase, identifier, sensitive=0, unzip=0, reset=0):
                     if common != "" and common in filename2:
                         total_score += metadata2.get("score", 0) / metadata2.get("max", 1)
                         max_score += 1
-            print(f" - Current: {score}, Total: {total_score}/{max_score}")
+            print(f" - Current: {score}, Total: {total_score:,.2f}/{max_score:,.2f}")
 
 def analyze(directory, filename, testcase, sensitive):
     metadata = {}
@@ -123,36 +113,56 @@ def analyze(directory, filename, testcase, sensitive):
             results = csv(items)
         except:
             pass
+        
         used = []
+        loop_counters = 1
+        previous = ""
+        previous_indent = ""
         for line in script.split("\n"):
-            line = remove_comments(line)
+            line = line.rstrip()
             if line != "":
-                if ("input(" not in line):
+                line = line.replace("input (", "input(")
+                line = indent_correction(remove_comments(line))
+                if previous in ("if", "else", "for", "while", "try", "except", "with", "def"):
+                    if len(previous_indent) >= len(get_indents(line)):
+                        line = f"    {line}"
+                if "while " in line or "for " in line:
+                    indents = get_indents(line)
+                    formatted.append(f"{indents}didak_loop_counter{loop_counters} = 0")
                     formatted.append(line)
-                else:
-                    if "=" in line:
-                        found = False
-                        for key, value in keywords.items():
-                            if found:
-                                break
-                            if key not in used:
-                                for search in csv(key)[0]:
-                                    if search in line:                                        
-                                        if sensitive == 0:
-                                            line = line.lower()
-                                        variable = line.split("=")[0]
-                                        formatted.append(f"{variable} = {value}")
-                                        used.append(key)
-                                        found = True
-                                        break
+                    indents = get_indents(line, 1)
+                    formatted.append(f"{indents}if didak_loop_counter{loop_counters} >= 100:")
+                    indents = get_indents(line, 2)
+                    formatted.append(f"{indents}break")
+                    indents = get_indents(line, 1)
+                    formatted.append(f"{indents}didak_loop_counter{loop_counters} += 1")
+                    loop_counters += 1
+                elif ("input(" not in line):
+                    formatted.append(line)
+                elif "=" in line:
+                    found = False
+                    for key, value in keywords.items():
+                        if found:
+                            break
+                        if key not in used:
+                            for search in csv(key)[0]:
+                                if search in line:
+                                    variable = line.split("=")[0]                               
+                                    if sensitive == 0:
+                                        line = line.lower()
+                                    formatted.append(f"{variable} = {value}")
+                                    used.append(key)
+                                    found = True
+                                    break
                         if not found:
                             # workaround only
                             variable = line.split("=")[0]
                             formatted.append(f"{variable} = 1")
-                    else:
-                        # workaround only
-                        formatted.append(line.replace("input(", "print("))
-                                    
+                else:
+                    # workaround only
+                    formatted.append(line.replace("input(", "print("))
+                previous_indent = get_indents(line)
+                previous = list(line.strip().split(" "))[0].replace(":", "")
         
         with open(f"{directory}/didak/test.py", "w+", encoding="utf-8") as file:
             file.write("\n".join(formatted))
@@ -163,7 +173,11 @@ def analyze(directory, filename, testcase, sensitive):
         if sensitive == 0:
             test_results = test_results.lower()
         results = list([x for x in results if len(x) > 0 and "".join(x) != ""])
+        test_result_lines = list(test_results.split("\n"))
+        test_result_lines = list([x for x in test_result_lines if x.strip() != ""])
         for result in results:
+            if score >= len(test_result_lines):
+                break
             for variant in result:
                 if variant in test_results:
                     score += 1
@@ -194,6 +208,31 @@ def csv(data):
             row.append("".join(cell))
         table.append(row)
     return table
+
+def get_indents(line, add=0):
+    spaces = []
+    for character in line:
+        if line[0] != " ":
+            break
+        if (len(spaces) > 1 and character != " "):
+            break
+        else:
+            spaces.append(" ")
+    indents = ["".join(spaces)]
+    for x in range(add):
+        indents.append("    ")
+    return "".join(indents)
+
+def indent_correction(line):
+    line = line.replace("\t", "    ")
+    indents = get_indents(line)
+    spaces = len(indents) % 4
+    while (len(indents) % 4) != 0:
+        if spaces < 2:
+            indents = indents[:-1]
+        else:
+            indents += " "
+    return f"{indents}{line.strip()}"
 
 def remove_comments(line):
     """
@@ -266,8 +305,8 @@ def extract(path, destination):
         print(f"\nDidakWarning: Error in processing ZIP file: {path}")
         pass
 
-
-def default(value, minimum, maximum, fallback):
+    
+def defaults(value, minimum, maximum, fallback):
     if value is not None:
         if not (minimum <= value <= maximum):
             return fallback
@@ -289,78 +328,3 @@ def get_filenames(path, extension):
         if filepath.split(".")[-1].lower() == extension:
             filenames.append(filepath)
     return filenames
-
-
-################
-# didak logic  #
-################
-parser = argparse.ArgumentParser(prog="didak",
-                                 description="Similarity didakr.")
-parser.add_argument("-d",
-                    "--directory",
-                    metavar="directory",
-                    type=str,
-                    help="Directory of the files.",
-                    required=True)
-
-parser.add_argument("-t",
-                    "--testcase",
-                    metavar="testcase",
-                    type=str,
-                    help="Filepath of the test case file.",
-                    required=True)
-
-parser.add_argument("-u",
-                    "--unzip",
-                    metavar="unzip",
-                    type=int,
-                    help="Unzip flag")
-
-parser.add_argument("-i",
-                    "--identifier",
-                    metavar="identifier",
-                    type=str,
-                    help="Only run filenames with this unique identifier")
-
-parser.add_argument("-s",
-                    "--sensitive",
-                    metavar="sensitive",
-                    type=int,
-                    help="Case-sensitivity")
-
-parser.add_argument("-r",
-                    "--reset",
-                    metavar="reset",
-                    type=int,
-                    help="Reset data before analyzing files.")
-
-args = parser.parse_args()
-
-# get submissions directory
-directory = args.directory
-if not check_path(directory):
-    print(f"\nDidakError: The directory was not found: {directory}")
-    sys.exit(0)
-
-# get testcase path
-testcase = args.testcase
-if testcase is not None:
-    if not check_path(testcase):
-        print(f"\nDidakWarning: File was not found: {testcase}")
-        sys.exit(0)
-
-# get identifier
-identifier = args.identifier
-if identifier is None:
-    identifier = ""
-
-# set the case-sensitive flag
-sensitive = default(args.sensitive, 0, 1, 0)
-
-# set the unzip flag
-unzip = default(args.unzip, 0, 1, 0)
-
-# set the clear data flag
-reset = default(args.reset, 0, 1, 0)
-
-didak(directory, testcase=testcase, identifier=identifier, sensitive=sensitive, unzip=unzip, reset=reset)
