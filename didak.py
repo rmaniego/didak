@@ -123,9 +123,16 @@ def analyze(directory, filename, testcase, sensitive):
             line = line.rstrip()
             if line != "":
                 line = line.replace("input (", "input(")
+                line = line.replace("while(", "while (")
                 line = indent_correction(remove_comments(line))
                 if previous in ("if", "else", "for", "while", "try", "except", "with", "def"):
                     if len(previous_indent) >= len(get_indents(line)):
+                        line = f"    {line}"
+                previous_indent_count = len(previous_indent) // 4
+                current_indent_count = len(get_indents(line)) // 4
+                if (current_indent_count - previous_indent_count) > 1:
+                    line = line.strip()
+                    for x in range((previous_indent_count+1)):
                         line = f"    {line}"
                 if "while " in line or "for " in line:
                     indents = get_indents(line)
@@ -134,7 +141,7 @@ def analyze(directory, filename, testcase, sensitive):
                     indents = get_indents(line, 1)
                     formatted.append(f"{indents}if didak_loop_counter{loop_counters} >= 100:")
                     indents = get_indents(line, 2)
-                    formatted.append(f"{indents}print(\"Reach the maximum limit of recursion.\")")
+                    formatted.append(f"{indents}print(\"Reached the maximum limit of recursion.\")")
                     formatted.append(f"{indents}break")
                     indents = get_indents(line, 1)
                     formatted.append(f"{indents}didak_loop_counter{loop_counters} += 1")
@@ -143,6 +150,7 @@ def analyze(directory, filename, testcase, sensitive):
                     formatted.append(line)
                 elif "=" in line:
                     found = False
+                    keyword_index = 0
                     for key, value in keywords.items():
                         if found:
                             break
@@ -152,7 +160,18 @@ def analyze(directory, filename, testcase, sensitive):
                                     variable = line.split("=")[0]                               
                                     if sensitive == 0:
                                         line = line.lower()
-                                    formatted.append(f"{variable} = {value}")
+                                    values = []
+                                    for x in variable.split(","):
+                                        next_key = list(keywords.keys())[keyword_index]
+                                        next_value = keywords.get(next_key, 0)
+                                        values.append(next_value)
+                                        used.append(next_key)
+                                        keyword_index += 1
+                                    tuple_of_values = ",".join(values)
+                                    if len(values) == 1:
+                                        formatted.append(f"{variable} = {tuple_of_values}")
+                                    else:
+                                        formatted.append(f"{variable} = [{tuple_of_values}]")
                                     used.append(key)
                                     found = True
                                     break
@@ -160,17 +179,18 @@ def analyze(directory, filename, testcase, sensitive):
                             # workaround only
                             variable = line.split("=")[0]
                             formatted.append(f"{variable} = 1")
+                        keyword_index += 1
                 else:
                     # workaround only
                     formatted.append(line.replace("input(", "print("))
                 previous_indent = get_indents(line)
                 previous = list(line.strip().split(" "))[0].replace(":", "")
         
-        with open(f"{directory}/didak/test.py", "w+", encoding="utf-8") as file:
+        with open(f"{directory}/didak/{filename}.py", "w+", encoding="utf-8") as file:
             file.write("\n".join(formatted))
         
         score = 0
-        test_results = get_results(f"{directory}/didak/test.py")
+        test_results = get_results(f"{directory}/didak/{filename}.py")
         metadata.update({"results": test_results})
         if sensitive == 0:
             test_results = test_results.lower()
