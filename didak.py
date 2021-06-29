@@ -18,6 +18,9 @@ def didak(directory, testcase, identifier, sensitive=0, unzip=0, reset=0):
         print("\nDidakError: 'directory' parameter must be a string.")
         return
     
+    if not check_path(f"{directory}/didak"):
+        os.makedirs(f"{directory}/didak")
+    
     directory = directory.replace("\\", "/")
     if directory[-1] == "/":
         directory = directory[:-1]
@@ -135,7 +138,9 @@ def analyze(directory, filename, testcase, sensitive):
                     line = line.strip()
                     for x in range((previous_indent_count+1)):
                         line = f"    {line}"
-                if "while " in line or "for " in line:
+                
+                command = list(line.strip().split(" "))[0].replace(":", "").strip()
+                if command in ("while", "for"):
                     indents = get_indents(line)
                     formatted.append(f"{indents}didak_loop_counter{loop_counters} = 0")
                     formatted.append(line)
