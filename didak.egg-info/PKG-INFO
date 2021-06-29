@@ -1,3 +1,23 @@
+Metadata-Version: 2.1
+Name: didak
+Version: 1.0.0
+Summary: Didak is a simple test case runner, that simulates input and verifies the whether the final output is correct.
+Home-page: https://github.com/rmaniego/didak
+Author: Rodney Maniego Jr.
+Author-email: rod.maniego23@gmail.com
+License: MIT
+Download-URL: https://github.com/rmaniego/didak/archive/v1.0.tar.gz
+Keywords: Python,test,testcase,automation
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Build Tools
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
 # didak
 Python is a basic test case runner, that simulates input and verifies the whether the final output is correct.
 
@@ -60,3 +80,4 @@ Is used to fill in expected input and function parameters before execution and v
 
 ## Did you know?
 The repository name `didak` was inspired from the words deduce and Didache; deduce means to arrived at a consluion by reasoning, while Didache is a manuscript in the Christain theological literature.
+

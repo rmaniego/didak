@@ -6,9 +6,9 @@ with open("README.md", "r") as f:
 setuptools.setup(
     name = 'didak',
     packages = ["didak"],
-    version = '1.0.0',
+    version = '1.0.1',
     license='MIT',
-    description = 'didak is a basic test case runner, that simulates input and verifies the whether the final output is correct.',
+    description = 'Didak is a simple test case runner, that simulates input and verifies the whether the final output is correct.',
     long_description=long_description,
     long_description_content_type="text/markdown",
     author = 'Rodney Maniego Jr.',
