@@ -5,12 +5,24 @@ Python is a basic test case runner, that simulates input and verifies the whethe
 - [Arkivist](https://pypi.org/project/arkivist/) `pip install arkivist`
 - [Maguro](https://pypi.org/project/maguro/) `pip install maguro`
 
-
 ## Usage
+Install the latest didak package, upcoming versions might introduce unannounced changes, so a virtual environment is a must have before installation.
 ```bash
-# usage: didak [-h] -d directory -t testcase [-u unzip] [-i identifier] [-s sensitive] [-r reset]
+pip install -U didak
+```
 
-py didak.py -d "<path_to_files>" -t "<path_to_testcase>" -u 1 -i "<keyword>" -s 1 -r 1
+To integrate didak into your Python codes, check the code snippet below:
+```python
+import didak
+
+didak.didak(directory, testcase, identifier, sensitive=0, unzip=0, reset=0)
+```
+
+## CLI Usage
+```bash
+# usage: runner [-h] -d directory -t testcase [-u unzip] [-i identifier] [-s sensitive] [-r reset]
+
+py runner.py -d "<path_to_files>" -t "<path_to_testcase>" -u 1 -i "<keyword>" -s 1 -r 1
 ```
 
 **1.** `-d <path>` - Full path of the dirctory containing the files to execute.
