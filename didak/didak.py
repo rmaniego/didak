@@ -8,6 +8,7 @@ import os
 import sys
 import zipfile
 import subprocess
+from statistics import mean
 
 from arkivist import Arkivist
 from maguro import Maguro
@@ -213,6 +214,71 @@ def analyze(directory, filename, testcase, sensitive):
         metadata.update({"score": score})
         metadata.update({"max": len(results)})
     return metadata
+
+def grader(directory, tolerance=60):
+    grades = Arkivist(f"{directory}/didak/grades.json", sort=True)
+    abero_analysis = Arkivist(f"{directory}/abero/analysis.json")
+    didak_analysis = Arkivist(f"{directory}/didak/analysis.json")
+    for filename in didak_analysis.keys():
+        statistics = abero_analysis.get(filename, {})
+        originality = statistics.get("statistics", {}).get("originality", 100)
+        metadata = didak_analysis.get(filename, {})
+        common = ""
+        total_score = metadata.get("score", 0) / metadata.get("max", 1)
+        userdata = {}
+        
+        items = 1
+        counter = 0
+        for filename2, metadata2 in didak_analysis.show().items():
+            if filename != filename2:
+                if common == "":
+                    temp = common_string(filename, filename2)
+                    if len(temp) >= 10:
+                        common = temp
+                if common != "" and common in filename2:
+                    items += 1
+                    counter += 1
+                    total_score += metadata2.get("score", 0) / metadata2.get("max", 1)
+                    userdata = grades.get(common, {})
+        
+        if counter == 0:
+            common = filename
+        if common != "":
+            uniqueness = userdata.get("originality", [])
+            uniqueness.append(originality)
+            userdata.update({"uniqueness": uniqueness})
+            userdata.update({"score": total_score})
+            userdata.update({"items": items})
+            grades.set(common, userdata)
+
+    originality = []
+    for filename, userdata in grades.items():
+        originality.append(round(mean(userdata.get("uniqueness", [0])), 2))
+
+    common_originality = mean(originality)
+    if tolerance == 50:
+        tolerance = common_originality
+
+    count = 1
+    for filename, userdata in grades.items():
+        grade = round(userdata.get("grade", 0), 2)
+        originality = round(mean(userdata.get("uniqueness", [100])), 2)
+        items = round(userdata.get("items", 1), 2)
+        score = round(userdata.get("score", 0), 2)
+        total = round((score / items * 100), 2)
+        adjusted = total
+        adjusted_score = score
+        if originality < tolerance:
+            adjusted = round((total * (originality / 100)), 2)
+            adjusted_score = round((score * (originality / 100)), 2)
+        
+        print(f"\nFile #{count} - {filename}")
+        print(f" - Originality: {originality}%")
+        print(f" - Maximum grade: {score}/{items} ({total}%)")
+        print(f" - Expected grade: {adjusted_score} ({adjusted}%)")
+        userdata.update({"grade": adjusted_score})
+        grades.set(filename, userdata)
+        count += 1
 
 def csv(data):
     table = []
