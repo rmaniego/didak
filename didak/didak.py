@@ -40,8 +40,9 @@ def didak(directory, testcase, identifier, sensitive=0, unzip=0, convert=0, rese
         if not check_path(testcase):
             print("\nDidakWarning: Test case file was not found.")
             testcase = None
-    
-    testcase = testcase.replace("\\", "/")
+
+    if testcase is not None:
+        testcase = testcase.replace("\\", "/")
     
     
     if not check_path(f"{directory}/didak"):

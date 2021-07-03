@@ -21,17 +21,23 @@ def runner():
                         help="Filepath of the test case file.",
                         required=True)
 
+    parser.add_argument("-i",
+                        "--identifier",
+                        metavar="identifier",
+                        type=str,
+                        help="Only run filenames with this unique identifier.")
+
     parser.add_argument("-u",
                         "--unzip",
                         metavar="unzip",
                         type=int,
                         help="Unzip flag")
 
-    parser.add_argument("-i",
-                        "--identifier",
-                        metavar="identifier",
-                        type=str,
-                        help="Only run filenames with this unique identifier")
+    parser.add_argument("-c",
+                        "--convert",
+                        metavar="convert",
+                        type=int,
+                        help="Convert Jupyter notebooks to Python files.")
 
     parser.add_argument("-s",
                         "--sensitive",
@@ -71,10 +77,13 @@ def runner():
     # set the unzip flag
     unzip = didak.defaults(args.unzip, 0, 1, 0)
 
+    # set the convert flag
+    convert = didak.defaults(args.convert, 0, 1, 0)
+
     # set the clear data flag
     reset = didak.defaults(args.reset, 0, 1, 0)
 
-    didak.didak(directory, testcase=testcase, identifier=identifier, sensitive=sensitive, unzip=unzip, reset=reset)
+    didak.didak(directory, testcase=testcase, identifier=identifier, sensitive=sensitive, unzip=unzip, convert=convert, reset=reset)
 
 if __name__ == "__main__":
     runner()

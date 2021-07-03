@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: didak
-Version: 1.0.1
+Version: 1.0.2
 Summary: Didak is a simple test case runner, that simulates input and verifies the whether the final output is correct.
 Home-page: https://github.com/rmaniego/didak
 Author: Rodney Maniego Jr.
@@ -21,10 +21,6 @@ License-File: LICENSE
 # didak
 Python is a basic test case runner, that simulates input and verifies the whether the final output is correct.
 
-## Requirements
-- [Arkivist](https://pypi.org/project/arkivist/) `pip install arkivist`
-- [Maguro](https://pypi.org/project/maguro/) `pip install maguro`
-
 ## Usage
 Install the latest didak package, upcoming versions might introduce unannounced changes, so a virtual environment is a must have before installation.
 ```bash
@@ -35,22 +31,23 @@ To integrate didak into your Python codes, check the code snippet below:
 ```python
 import didak
 
-didak.didak(directory, testcase, identifier, sensitive=0, unzip=0, reset=0)
+didak.didak(directory, testcase, identifier, sensitive=0, unzip=0, convert=0, reset=0)
 ```
 
 ## CLI Usage
 ```bash
-# usage: runner [-h] -d directory -t testcase [-u unzip] [-i identifier] [-s sensitive] [-r reset]
+# usage: runner [-h] -d directory -t testcase [-i identifier] [-s sensitive] [-u unzip] [-c convert] [-r reset]
 
-py runner.py -d "<path_to_files>" -t "<path_to_testcase>" -u 1 -i "<keyword>" -s 1 -r 1
+py runner.py -d "<path_to_files>" -t "<path_to_testcase>" -i "<keyword>" -s 1 -u 1 -c 1 -r 1
 ```
 
 1. `-d <path>` - Full path of the dirctory containing the files to execute.
 2. `-t <*.txt>` - Path to test case file
 3. `-u <0>` - Unzip/extract ZIP files (0-1; default = 0)
-4. `-i <keyword>` - Unique keyword found on files to execute
-4. `-s <0>` - Case-sensitivity (0-1; default = 0)
-6. `-r <0>` - Reset analytics before execution (0-1; default = 0)
+4. `-c <0>` - Convert Jupyter notbooks to Python file (0-1; default = 0)
+5. `-i <keyword>` - Unique keyword found on files to execute
+6. `-s <0>` - Case-sensitivity (0-1; default = 0)
+7. `-r <0>` - Reset analytics before execution (0-1; default = 0)
 
 ## Test Case
 Is used to fill in expected input and function parameters before execution and verifying of expected output.
