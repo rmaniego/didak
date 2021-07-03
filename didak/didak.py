@@ -13,7 +13,7 @@ from statistics import mean
 from arkivist import Arkivist
 from maguro import Maguro
 
-def didak(directory, testcase, identifier, sensitive=0, unzip=0, reset=0):
+def didak(directory, testcase, identifier, sensitive=0, unzip=0, convert=0, reset=0):
     
     if not isinstance(directory, str):
         print("\nDidakError: 'directory' parameter must be a string.")
@@ -32,6 +32,7 @@ def didak(directory, testcase, identifier, sensitive=0, unzip=0, reset=0):
 
     sensitive = validate(sensitive, 0, 1, 0)
     unzip = validate(unzip, 0, 1, 0)
+    convert = validate(convert, 0, 1, 0)
     reset = validate(reset, 0, 1, 0)
     
     testcase_filename = ""
@@ -47,10 +48,20 @@ def didak(directory, testcase, identifier, sensitive=0, unzip=0, reset=0):
         os.makedirs(f"{directory}/didak")
     
     if unzip == 1:
-        print("\nUnzipping files:")
-        for filename in get_filenames(directory, "zip"):
-            print(f" - {filename}")
-            extract(f"{directory}/{filename}", f"{directory}")
+        files = get_filenames(directory, "zip")
+        if len(files) > 0:
+            print("\nUnzipping files:")
+            for filename in files:
+                print(f" - {filename}")
+                extract(f"{directory}/{filename}", f"{directory}")
+    
+    if convert == 1:
+        files = get_filenames(directory, "ipynb")
+        if len(files) > 0:
+            print("\nConverting notebooks:")
+            for filename in files:
+                print(f" - {filename}")
+                ipynb2py(f"{directory}/{filename}")
 
     print("\nAnalyzing files...")
     
@@ -214,6 +225,28 @@ def analyze(directory, filename, testcase, sensitive):
         metadata.update({"score": score})
         metadata.update({"max": len(results)})
     return metadata
+
+def ipynb2py(filepath):
+    script = []
+    ipynb = Arkivist(filepath).show()
+    for cell in ipynb.get("cells", []):
+        cell_type = cell.get("cell_type", "")
+        outputs = cell.get("outputs", [])
+        source = cell.get("source", [])
+        
+        if cell_type == "code" and len(outputs) > 0:
+            for line in source:
+                script.append(line)
+            for line in outputs[0].get("text", 0):
+                script.append(f"# {line}")
+        else:
+            for line in source:
+                script.append(f"# {line}")
+    new_filepath = filepath.replace(".ipynb", ".py")
+    print(new_filepath)
+    with open(new_filepath, "w+", encoding="utf-8") as file:
+        if len(script) > 0:
+            file.write("\n".join(script))
 
 def grader(directory, tolerance=60):
     grades = Arkivist(f"{directory}/didak/grades.json", sort=True)

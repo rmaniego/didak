@@ -4,6 +4,7 @@ commit.sh
 pypi.sh
 setup.cfg
 setup.py
+tests.py
 didak/__init__.py
 didak/didak.py
 didak/runner.py
@@ -13,6 +14,10 @@ didak.egg-info/SOURCES.txt
 didak.egg-info/dependency_links.txt
 didak.egg-info/requires.txt
 didak.egg-info/top_level.txt
+didak/__pycache__/__init__.cpython-39.pyc
+didak/__pycache__/didak.cpython-39.pyc
+didak/__pycache__/runner.cpython-39.pyc
+didak/__pycache__/version.cpython-39.pyc
 examples/juan_set1.py
 examples/maria_set1.py
 examples/pedro_set1.py
