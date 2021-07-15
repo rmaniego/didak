@@ -67,7 +67,8 @@ def didak(directory, testcase, identifier, sensitive=0, unzip=0, convert=0, rese
     print("\nAnalyzing files...")
     
     prev = ""
-    testcase_filename = testcase.split("/")[-1:][0]
+    if testcase_filename is not None:
+        testcase_filename = testcase.split("/")[-1:][0]
 
     analysis = Arkivist(f"{directory}/didak/analysis.json", sort=True)
     if reset == 1:
@@ -138,8 +139,7 @@ def analyze(directory, filename, testcase, sensitive):
         for line in script.split("\n"):
             line = line.rstrip()
             if line != "":
-                line = line.replace("print (", "print(")
-                line = line.replace("input (", "input(")
+                line = line.replace(" (", "(")
                 line = line.replace("while(", "while (")
                 line = indent_correction(remove_comments(line))
                 if previous in ("if", "else", "for", "while", "try", "except", "with", "def"):
@@ -181,11 +181,14 @@ def analyze(directory, filename, testcase, sensitive):
                                         line = line.lower()
                                     values = []
                                     for x in variable.split(","):
-                                        next_key = list(keywords.keys())[keyword_index]
-                                        next_value = keywords.get(next_key, 0)
-                                        values.append(next_value)
-                                        used.append(next_key)
-                                        keyword_index += 1
+                                        try:
+                                            next_key = list(keywords.keys())[keyword_index]
+                                            next_value = keywords.get(next_key, 0)
+                                            values.append(next_value)
+                                            used.append(next_key)
+                                            keyword_index += 1
+                                        except:
+                                            pass
                                     tuple_of_values = ",".join(values)
                                     if len(values) == 1:
                                         formatted.append(f"{variable} = {tuple_of_values}")
