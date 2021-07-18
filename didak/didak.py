@@ -121,6 +121,9 @@ def analyze(directory, filename, testcase, sensitive, loops):
             pass
     
     if script != "":
+        script = script.replace("\r", "")
+        script = script.replace("\n ", "")
+        script = script.replace(",\n", ",")
         data = Maguro(testcase, delimiter="---")
         try:
             for item in data.unpack()[0].split("\n"):

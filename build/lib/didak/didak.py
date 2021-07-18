@@ -13,7 +13,7 @@ from statistics import mean
 from arkivist import Arkivist
 from maguro import Maguro
 
-def didak(directory, testcase, identifier, sensitive=0, unzip=0, convert=0, reset=0):
+def didak(directory, testcase, identifier, sensitive=0, unzip=0, convert=0, loops=99, reset=0):
     
     if not isinstance(directory, str):
         print("\nDidakError: 'directory' parameter must be a string.")
@@ -29,10 +29,14 @@ def didak(directory, testcase, identifier, sensitive=0, unzip=0, convert=0, rese
     if not isinstance(identifier, str):
         print("\nDidakError: 'identifier' parameter must be a string.")
         return
+    
+    if not isinstance(loops, int):
+        loops = 100
 
     sensitive = validate(sensitive, 0, 1, 0)
     unzip = validate(unzip, 0, 1, 0)
     convert = validate(convert, 0, 1, 0)
+    loops = validate(loops, 1, 9999, 99)
     reset = validate(reset, 0, 1, 0)
     
     testcase_filename = ""
@@ -76,7 +80,7 @@ def didak(directory, testcase, identifier, sensitive=0, unzip=0, convert=0, rese
     filenames = get_filenames(f"{directory}", "py")
     for filename in filenames:
         if identifier == "" or identifier in filename:
-            metadata = analyze(directory, filename, testcase, sensitive)
+            metadata = analyze(directory, filename, testcase, sensitive, loops)
             analysis.set(filename, metadata)
     
     print("\nGenerating report...")
@@ -103,7 +107,7 @@ def didak(directory, testcase, identifier, sensitive=0, unzip=0, convert=0, rese
                         max_score += 1
             print(f" - Current: {score} of {max}, Total: {total_score:,.2f}/{max_score:,.2f}")
 
-def analyze(directory, filename, testcase, sensitive):
+def analyze(directory, filename, testcase, sensitive, loops):
     metadata = {}
     formatted = []
     keywords = {}
@@ -158,7 +162,7 @@ def analyze(directory, filename, testcase, sensitive):
                     formatted.append(f"{indents}didak_loop_counter{loop_counters} = 0")
                     formatted.append(line)
                     indents = get_indents(line, 1)
-                    formatted.append(f"{indents}if didak_loop_counter{loop_counters} >= 100:")
+                    formatted.append(f"{indents}if didak_loop_counter{loop_counters} >= {loops}:")
                     indents = get_indents(line, 2)
                     formatted.append(f"{indents}print(\"Reached the maximum limit of recursion.\")")
                     formatted.append(f"{indents}break")
@@ -247,7 +251,6 @@ def ipynb2py(filepath):
             for line in source:
                 script.append(f"# {line}")
     new_filepath = filepath.replace(".ipynb", ".py")
-    print(new_filepath)
     with open(new_filepath, "w+", encoding="utf-8") as file:
         if len(script) > 0:
             file.write("\n".join(script))
