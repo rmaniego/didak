@@ -162,6 +162,7 @@ def analyze(directory, filename, testcase, sensitive, loops):
                     line = line.strip()
                     for x in range((previous_indent_count+1)):
                         line = f"    {line}"
+                    
                 
                 command = list(line.strip().split(" "))[0].replace(":", "").strip()
                 if command in ("while", "for"):
@@ -214,8 +215,16 @@ def analyze(directory, filename, testcase, sensitive, loops):
                             formatted.append(f"{variable} = 1")
                         keyword_index += 1
                 else:
-                    # workaround only
-                    formatted.append(line.replace("input(", "print("))
+                    if ": " in line:
+                        line1, line2 = line.split(": ")
+                        indents = get_indents(line1, 1)
+                        line2 = line2.strip()
+                        line2 = f"{indents}{line2}"
+                        formatted.append(line1)
+                        formatted.append(line2)
+                    else:
+                        # workaround only
+                        formatted.append(line.replace("input(", "print("))
                 previous_indent = get_indents(line)
                 previous = list(line.strip().split(" "))[0].replace(":", "")
         

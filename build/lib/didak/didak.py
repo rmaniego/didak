@@ -122,11 +122,11 @@ def analyze(directory, filename, testcase, sensitive, loops):
     
     if script != "":
         script = script.replace("\r", "")
-        script = script.replace(" \n", "")
-        script = script.replace(" \n", "")
-        script = script.replace(" \n", "")
-        script = script.replace(" \n", "")
-        script = script.replace(" \n", "")
+        script = script.replace(" \n", "\n")
+        script = script.replace(" \n", "\n")
+        script = script.replace(" \n", "\n")
+        script = script.replace(" \n", "\n")
+        script = script.replace(" \n", "\n")
         script = script.replace(",\n", ",")
         data = Maguro(testcase, delimiter="---")
         try:
