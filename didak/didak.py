@@ -250,10 +250,7 @@ def ipynb2py(filepath):
         else:
             for line in source:
                 script.append(f"# {line}")
-            for line in outputs[0].get("text", 0):
-                script.append(f"# {line}")
     new_filepath = filepath.replace(".ipynb", ".py")
-    print(new_filepath)
     with open(new_filepath, "w+", encoding="utf-8") as file:
         if len(script) > 0:
             file.write("\n".join(script))
