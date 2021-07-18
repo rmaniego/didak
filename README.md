@@ -11,14 +11,14 @@ To integrate didak into your Python codes, check the code snippet below:
 ```python
 import didak
 
-didak.didak(directory, testcase, identifier, sensitive=0, unzip=0, convert=0, reset=0)
+didak.didak(directory, testcase, identifier, sensitive=0, unzip=0, convert=0, loops=99, reset=0)
 ```
 
 ## CLI Usage
 ```bash
-# usage: runner [-h] -d directory -t testcase [-i identifier] [-s sensitive] [-u unzip] [-c convert] [-r reset]
+# usage: runner [-h] -d directory -t testcase [-i identifier] [-s sensitive] [-u unzip] [-c convert] [-l loops] [-r reset]
 
-py runner.py -d "<path_to_files>" -t "<path_to_testcase>" -i "<keyword>" -s 1 -u 1 -c 1 -r 1
+py runner.py -d "<path_to_files>" -t "<path_to_testcase>" -i "<keyword>" -s 1 -u 1 -c 1 -l 99 -r 1
 ```
 
 1. `-d <path>` - Full path of the dirctory containing the files to execute.
@@ -27,7 +27,8 @@ py runner.py -d "<path_to_files>" -t "<path_to_testcase>" -i "<keyword>" -s 1 -u
 4. `-c <0>` - Convert Jupyter notbooks to Python file (0-1; default = 0)
 5. `-i <keyword>` - Unique keyword found on files to execute
 6. `-s <0>` - Case-sensitivity (0-1; default = 0)
-7. `-r <0>` - Reset analytics before execution (0-1; default = 0)
+7. `-l <99>` - Looping / max recursions (1-9999; default = 99)
+8. `-r <0>` - Reset analytics before execution (0-1; default = 0)
 
 ## Test Case
 Is used to fill in expected input and function parameters before execution and verifying of expected output.

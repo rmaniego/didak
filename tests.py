@@ -13,6 +13,8 @@ skipnames = 1
 group = 1
 convert = 1
 
+loops = 99
+
 abero.analyze(directory, extension, threshold, template, skipnames, group)
 
 
@@ -22,7 +24,7 @@ for index, test in enumerate(tests):
     count = index + 1
     identifier = f"Q{count}"
     testcase = f"C:\\drive\\notebooks\\vsu\\2021S2_0315\\01 workload\\ESci 126\\codes\\lab\\{lab}\\testcaseq{test}.txt"
-    didak.didak(directory, testcase, identifier, convert=convert)
+    didak.didak(directory, testcase, identifier, convert=convert, loops=loops)
 
 
 didak.grader(directory, tolerance)
