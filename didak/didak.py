@@ -217,11 +217,12 @@ def analyze(directory, filename, testcase, sensitive, loops):
                 else:
                     if ": " in line:
                         line1, line2 = line.split(": ")
-                        indents = get_indents(line1, 1)
+                        formatted.append(f"{line1}:")
                         line2 = line2.strip()
-                        line2 = f"{indents}{line2}"
-                        formatted.append(line1)
-                        formatted.append(line2)
+                        if line2 != "":
+                            indents = get_indents(line1, 1)
+                            line2 = f"{indents}{line2}"
+                            formatted.append(line2)
                     else:
                         # workaround only
                         formatted.append(line.replace("input(", "print("))
