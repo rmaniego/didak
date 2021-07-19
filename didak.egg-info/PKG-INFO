@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: didak
-Version: 1.0.11
+Version: 1.0.12
 Summary: Didak is a simple test case runner, that simulates input and verifies the whether the final output is correct.
 Home-page: https://github.com/rmaniego/didak
 Author: Rodney Maniego Jr.
