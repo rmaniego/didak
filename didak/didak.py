@@ -128,8 +128,12 @@ def analyze(directory, filename, testcase, sensitive, loops, debug):
     if script != "":
         script = script.replace("\r", "")
         script = script.replace("\t", "    ")
+        while "\n\n" in script:
+            script = script.replace("\n\n", "\n")
         while " \n" in script:
             script = script.replace(" \n", "\n")
+        while "\n\n" in script:
+            script = script.replace("\n\n", "\n")
         script = script.replace(",\n", ",")
         data = Maguro(testcase, delimiter="---")
         try:
