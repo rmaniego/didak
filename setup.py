@@ -6,7 +6,7 @@ with open("README.md", "r") as f:
 setuptools.setup(
     name = 'didak',
     packages = ["didak"],
-    version = '1.0.15',
+    version = '1.0.17',
     license='MIT',
     description = 'Didak is a simple test case runner, that simulates input and verifies the whether the final output is correct.',
     long_description=long_description,
@@ -16,7 +16,7 @@ setuptools.setup(
     url = 'https://github.com/rmaniego/didak',
     download_url = 'https://github.com/rmaniego/didak/archive/v1.0.tar.gz',
     keywords = ['Python', 'test', 'testcase', 'automation'],
-    install_requires=["arkivist", "maguro"],
+    install_requires=["arkivist", "maguro", "autopep8"],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers', 

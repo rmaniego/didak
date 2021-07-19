@@ -52,6 +52,10 @@ def didak(directory, testcase, identifier, sensitive=0, unzip=0, convert=0, loop
     if not check_path(f"{directory}/didak"):
         os.makedirs(f"{directory}/didak")
     
+    debug = 0
+    if check_path(f"{directory}/didak/debug.json"):
+        debug = Arkivist(f"{directory}/didak/debug.json").get("debug", 0)
+    
     if unzip == 1:
         files = get_filenames(directory, "zip")
         if len(files) > 0:
@@ -80,7 +84,7 @@ def didak(directory, testcase, identifier, sensitive=0, unzip=0, convert=0, loop
     filenames = get_filenames(f"{directory}", "py")
     for filename in filenames:
         if identifier == "" or identifier in filename:
-            metadata = analyze(directory, filename, testcase, sensitive, loops)
+            metadata = analyze(directory, filename, testcase, sensitive, loops, debug)
             analysis.set(filename, metadata)
     
     print("\nGenerating report...")
@@ -107,7 +111,7 @@ def didak(directory, testcase, identifier, sensitive=0, unzip=0, convert=0, loop
                         max_score += 1
             print(f" - Current: {score} of {max}, Total: {total_score:,.2f}/{max_score:,.2f}")
 
-def analyze(directory, filename, testcase, sensitive, loops):
+def analyze(directory, filename, testcase, sensitive, loops, debug):
     metadata = {}
     formatted = []
     keywords = {}
@@ -144,94 +148,113 @@ def analyze(directory, filename, testcase, sensitive, loops):
         used = []
         loop_counters = 1
         previous = ""
-        previous_indent = ""
+        previous_command = ""
+        previous_actual_line = ""
+        previous_adjusted_indents = ""
+        previous_actual_indents = ""
+        indent_adjust = ""
+        
         for line in script.split("\n"):
+            
+            current_actual_line = line
+            
             line = line.rstrip()
-            if line != "":
-                line = line.replace(" (", "(")
-                line = line.replace("while(", "while (")
-                line = indent_correction(remove_comments(line))
-                if previous in ("if", "else", "for", "while", "try", "except", "with", "def"):
-                    if len(previous_indent) >= len(get_indents(line)):
-                        line = f"    {line}"
-                previous_indent_count = len(previous_indent) // 4
-                current_indent_count = len(get_indents(line)) // 4
-                if (current_indent_count - previous_indent_count) > 1:
-                    line = line.strip()
-                    for x in range((previous_indent_count+1)):
-                        line = f"    {line}"
-                
-                while ",  " in line:
-                    line = line.replace(",  ", ", ")
-                
-                command = list(line.strip().split(" "))[0].replace(":", "").strip()
-                if command in ("while", "for"):
-                    indents = get_indents(line)
-                    formatted.append(f"{indents}didak_loop_counter{loop_counters} = 0")
-                    formatted.append(line)
-                    indents = get_indents(line, 1)
-                    formatted.append(f"{indents}if didak_loop_counter{loop_counters} >= {loops}:")
-                    indents = get_indents(line, 2)
-                    formatted.append(f"{indents}print(\"Reached the maximum limit of recursion.\")")
-                    formatted.append(f"{indents}break")
-                    indents = get_indents(line, 1)
-                    formatted.append(f"{indents}didak_loop_counter{loop_counters} += 1")
-                    loop_counters += 1
-                elif command == "if":
-                    line1, line2 = line.split(":")
-                    formatted.append(f"{line1}:")
-                    line2 = line2.strip()
-                    if line2 != "":
-                        indents = get_indents(line1, 1)
-                        line2 = f"{indents}{line2}"
-                        formatted.append(line2)
-                        line = line2
-                elif ("input(" in line) and ("=" in line):
-                    found = False
-                    keyword_index = 0
-                    for key, value in keywords.items():
-                        if found:
-                            break
-                        if key not in used:
-                            for search in csv(key)[0]:
-                                if search in line:
-                                    variable = line.split("=")[0]                               
-                                    if sensitive == 0:
-                                        line = line.lower()
-                                    values = []
-                                    for x in variable.split(","):
-                                        try:
-                                            next_key = list(keywords.keys())[keyword_index]
-                                            next_value = keywords.get(next_key, 0)
-                                            values.append(next_value)
-                                            used.append(next_key)
-                                            keyword_index += 1
-                                        except:
-                                            pass
-                                    tuple_of_values = ",".join(values)
-                                    if len(values) == 1:
-                                        formatted.append(f"{variable} = {tuple_of_values}")
-                                    else:
-                                        formatted.append(f"{variable} = [{tuple_of_values}]")
-                                    used.append(key)
-                                    found = True
-                                    break
-                        if not found:
-                            # workaround only
-                            variable = line.split("=")[0]
-                            formatted.append(f"{variable} = 1")
-                        keyword_index += 1
-                else:
-                    # workaround only
-                    formatted.append(line.replace("input(", "print("))
-                previous_indent = get_indents(line)
-                previous = list(line.strip().split(" "))[0].replace(":", "")
+            line = line.replace(" (", "(")
+            line = line.replace("while(", "while (")
+            line = line.replace("if(", "if (")
+            line = line.replace("elif(", "elif (")    
+            
+            line = indent_correction(remove_comments(line))
+            
+            # indent for sub-statement
+            current_adjusted_indents = get_indents(line)
+            current_actual_indents = get_indents(current_actual_line)
+            if (previous == previous_command) and previous_command in ("if", "else", "for", "while", "try", "except", "with", "def"):
+                if len(previous_adjusted_indents) >= len(current_adjusted_indents):
+                    line = f"    {line}"
+            
+            while ",  " in line:
+                line = line.replace(",  ", ", ")
+            
+            command = list(line.strip().split(" "))[0].replace(":", "").strip()
+            if command in ("while", "for"):
+                indents = get_indents(line)
+                formatted.append(f"{indents}didak_loop_counter{loop_counters} = 0")
+                formatted.append(line)
+                indents = get_indents(line, 1)
+                formatted.append(f"{indents}if didak_loop_counter{loop_counters} >= {loops}:")
+                indents = get_indents(line, 2)
+                formatted.append(f"{indents}print(\"Reached the maximum limit of recursion.\")")
+                formatted.append(f"{indents}break")
+                indents = get_indents(line, 1)
+                formatted.append(f"{indents}didak_loop_counter{loop_counters} += 1")
+                loop_counters += 1
+                indent_adjust = ""
+            elif command in ("if", "elif", "else") and (list(line.split(":"))[1].strip() != ""):
+                line1, line2 = line.split(":")
+                formatted.append(f"{line1}:")
+                line2 = line2.strip()
+                if line2 != "":
+                    indents = get_indents(line1, 1)
+                    line2 = f"{indents}{line2}"
+                    formatted.append(line2)
+                    line = line2
+            elif ("input(" in line) and ("=" in line):
+                found = False
+                keyword_index = 0
+                for key, value in keywords.items():
+                    if found:
+                        break
+                    if key not in used:
+                        for search in csv(key)[0]:
+                            if search in line:
+                                variable = line.split("=")[0]                               
+                                if sensitive == 0:
+                                    line = line.lower()
+                                values = []
+                                for x in variable.split(","):
+                                    try:
+                                        next_key = list(keywords.keys())[keyword_index]
+                                        next_value = keywords.get(next_key, 0)
+                                        values.append(next_value)
+                                        used.append(next_key)
+                                        keyword_index += 1
+                                    except:
+                                        pass
+                                tuple_of_values = ",".join(values)
+                                if len(values) == 1:
+                                    formatted.append(f"{variable} = {tuple_of_values}")
+                                else:
+                                    formatted.append(f"{variable} = [{tuple_of_values}]")
+                                used.append(key)
+                                found = True
+                                break
+                    if not found:
+                        # workaround only
+                        variable = line.split("=")[0]
+                        formatted.append(f"{variable} = 1")
+                    keyword_index += 1
+            else:
+                # workaround only
+                formatted.append(line.replace("input(", "print("))
+
+            previous = command
+            if command != "":
+                previous_command = command
+            previous_adjusted_indents = get_indents(line)
+            previous_actual_line = current_actual_line
+            if line.strip() != "":
+                previous_actual_indents = get_indents(current_actual_line)
         
         with open(f"{directory}/didak/test.py", "w+", encoding="utf-8") as file:
             file.write("\n".join(formatted))
         
         score = 0
         test_results = get_results(f"{directory}/didak/test.py")
+        if test_results.strip() == "":
+            if debug == 1:
+                with open(f"{directory}/didak/{filename}", "w+", encoding="utf-8") as file:
+                    file.write("\n".join(formatted))
         metadata.update({"results": test_results})
         if sensitive == 0:
             test_results = test_results.lower()

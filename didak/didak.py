@@ -12,6 +12,7 @@ from statistics import mean
 
 from arkivist import Arkivist
 from maguro import Maguro
+import autopep8
 
 def didak(directory, testcase, identifier, sensitive=0, unzip=0, convert=0, loops=99, reset=0):
     
@@ -120,7 +121,7 @@ def analyze(directory, filename, testcase, sensitive, loops, debug):
     script = ""
     with open(f"{directory}/{filename}", "r", encoding="utf-8") as file:
         try:
-            script = file.read()
+            script = autopep8.fix_code(file.read())
         except:
             pass
     
@@ -247,7 +248,7 @@ def analyze(directory, filename, testcase, sensitive, loops, debug):
                 previous_actual_indents = get_indents(current_actual_line)
         
         with open(f"{directory}/didak/test.py", "w+", encoding="utf-8") as file:
-            file.write("\n".join(formatted))
+            file.write(autopep8.fix_code("\n".join(formatted)))
         
         score = 0
         test_results = get_results(f"{directory}/didak/test.py")
