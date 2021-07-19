@@ -122,11 +122,9 @@ def analyze(directory, filename, testcase, sensitive, loops):
     
     if script != "":
         script = script.replace("\r", "")
-        script = script.replace(" \n", "\n")
-        script = script.replace(" \n", "\n")
-        script = script.replace(" \n", "\n")
-        script = script.replace(" \n", "\n")
-        script = script.replace(" \n", "\n")
+        script = script.replace("\t", "    ")
+        while " \n" in script:
+            script = script.replace(" \n", "\n")
         script = script.replace(",\n", ",")
         data = Maguro(testcase, delimiter="---")
         try:
@@ -162,7 +160,9 @@ def analyze(directory, filename, testcase, sensitive, loops):
                     line = line.strip()
                     for x in range((previous_indent_count+1)):
                         line = f"    {line}"
-                    
+                
+                while ",  " in line:
+                    line = line.replace(",  ", ", ")
                 
                 command = list(line.strip().split(" "))[0].replace(":", "").strip()
                 if command in ("while", "for"):
