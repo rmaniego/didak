@@ -191,7 +191,7 @@ def analyze(directory, filename, testcase, sensitive, loops, debug):
                 formatted.append(f"{indents}didak_loop_counter{loop_counters} += 1")
                 loop_counters += 1
                 indent_adjust = ""
-            elif command in ("if", "elif", "else") and (list(line.split(":"))[1].strip() != ""):
+            elif command in ("if", "elif", "else") and (list(line.split(":")) == 2):
                 line1, line2 = line.split(":")
                 formatted.append(f"{line1}:")
                 line2 = line2.strip()

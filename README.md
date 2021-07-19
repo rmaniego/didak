@@ -1,6 +1,12 @@
 # didak
 Python is a basic test case runner, that simulates input and verifies the whether the final output is correct.
 
+## Requirements
+Didak uses the following packages:
+- arkivist
+- autopep8
+- maguro
+
 ## Usage
 Install the latest didak package, upcoming versions might introduce unannounced changes, so a virtual environment is a must have before installation.
 ```bash
