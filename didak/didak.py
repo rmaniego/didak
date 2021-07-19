@@ -223,6 +223,7 @@ def analyze(directory, filename, testcase, sensitive, loops):
                             indents = get_indents(line1, 1)
                             line2 = f"{indents}{line2}"
                             formatted.append(line2)
+                            line = line2
                     else:
                         # workaround only
                         formatted.append(line.replace("input(", "print("))
