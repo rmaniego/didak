@@ -178,7 +178,6 @@ def analyze(directory, filename, testcase, sensitive, loops):
                     formatted.append(f"{indents}didak_loop_counter{loop_counters} += 1")
                     loop_counters += 1
                 elif command == "if":
-                    print(line)
                     line1, line2 = line.split(":")
                     formatted.append(f"{line1}:")
                     line2 = line2.strip()

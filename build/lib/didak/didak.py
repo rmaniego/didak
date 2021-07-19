@@ -177,9 +177,17 @@ def analyze(directory, filename, testcase, sensitive, loops):
                     indents = get_indents(line, 1)
                     formatted.append(f"{indents}didak_loop_counter{loop_counters} += 1")
                     loop_counters += 1
-                elif ("input(" not in line):
-                    formatted.append(line)
-                elif "=" in line:
+                elif command == "if":
+                    print(line)
+                    line1, line2 = line.split(":")
+                    formatted.append(f"{line1}:")
+                    line2 = line2.strip()
+                    if line2 != "":
+                        indents = get_indents(line1, 1)
+                        line2 = f"{indents}{line2}"
+                        formatted.append(line2)
+                        line = line2
+                elif ("input(" in line) and ("=" in line):
                     found = False
                     keyword_index = 0
                     for key, value in keywords.items():
@@ -215,18 +223,8 @@ def analyze(directory, filename, testcase, sensitive, loops):
                             formatted.append(f"{variable} = 1")
                         keyword_index += 1
                 else:
-                    if ": " in line:
-                        line1, line2 = line.split(": ")
-                        formatted.append(f"{line1}:")
-                        line2 = line2.strip()
-                        if line2 != "":
-                            indents = get_indents(line1, 1)
-                            line2 = f"{indents}{line2}"
-                            formatted.append(line2)
-                            line = line2
-                    else:
-                        # workaround only
-                        formatted.append(line.replace("input(", "print("))
+                    # workaround only
+                    formatted.append(line.replace("input(", "print("))
                 previous_indent = get_indents(line)
                 previous = list(line.strip().split(" "))[0].replace(":", "")
         
