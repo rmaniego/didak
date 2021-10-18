@@ -49,10 +49,6 @@ def didak(directory, testcase, identifier, sensitive=0, unzip=0, convert=0, loop
     if testcase is not None:
         testcase = testcase.replace("\\", "/")
     
-    
-    if not check_path(f"{directory}/didak"):
-        os.makedirs(f"{directory}/didak")
-    
     debug = 0
     if check_path(f"{directory}/didak/debug.json"):
         debug = Arkivist(f"{directory}/didak/debug.json").get("debug", 0)
@@ -272,7 +268,7 @@ def analyze(directory, filename, testcase, sensitive, loops, debug):
                 if variant in test_results:
                     score += 1
                     break
-        if debug == 1 and test_results.strip() == "" or score == 0:
+        if debug == 1 and (test_results.strip() == "" or score == 0):
             with open(f"{directory}/didak/debug/{filename}", "w+", encoding="utf-8") as file:
                 file.write("\n".join(formatted))
         metadata.update({"score": score})
