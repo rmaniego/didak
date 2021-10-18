@@ -256,10 +256,6 @@ def analyze(directory, filename, testcase, sensitive, loops, debug):
         
         score = 0
         test_results = get_results(f"{directory}/didak/test.py")
-        if test_results.strip() == "":
-            if debug == 1:
-                with open(f"{directory}/didak/{filename}", "w+", encoding="utf-8") as file:
-                    file.write("\n".join(formatted))
         metadata.update({"results": test_results})
         if sensitive == 0:
             test_results = test_results.lower()
@@ -273,6 +269,10 @@ def analyze(directory, filename, testcase, sensitive, loops, debug):
                 if variant in test_results:
                     score += 1
                     break
+        if test_results.strip() == "" or score == 0:
+            if debug == 1:
+                with open(f"{directory}/didak/{filename}", "w+", encoding="utf-8") as file:
+                    file.write("\n".join(formatted))
         metadata.update({"score": score})
         metadata.update({"max": len(results)})
     return metadata
