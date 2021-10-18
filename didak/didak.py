@@ -339,8 +339,10 @@ def grader(directory, tolerance=60):
     originality = []
     for filename, userdata in grades.items():
         originality.append(round(mean(userdata.get("uniqueness", [0])), 2))
-
-    common_originality = mean(originality)
+    
+    common_originality = 100
+    if len(originality) > 0:
+        common_originality = mean(originality)
     if tolerance == 50:
         tolerance = common_originality
 
