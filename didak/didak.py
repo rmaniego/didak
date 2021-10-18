@@ -57,6 +57,9 @@ def didak(directory, testcase, identifier, sensitive=0, unzip=0, convert=0, loop
     if check_path(f"{directory}/didak/debug.json"):
         debug = Arkivist(f"{directory}/didak/debug.json").get("debug", 0)
     
+    if debug == 1 and not check_path(f"{directory}/didak/debug"):
+        os.makedirs(f"{directory}/didak/debug")
+    
     if unzip == 1:
         files = get_filenames(directory, "zip")
         if len(files) > 0:
@@ -269,10 +272,9 @@ def analyze(directory, filename, testcase, sensitive, loops, debug):
                 if variant in test_results:
                     score += 1
                     break
-        if test_results.strip() == "" or score == 0:
-            if debug == 1:
-                with open(f"{directory}/didak/{filename}", "w+", encoding="utf-8") as file:
-                    file.write("\n".join(formatted))
+        if debug == 1 and test_results.strip() == "" or score == 0:
+            with open(f"{directory}/didak/debug/{filename}", "w+", encoding="utf-8") as file:
+                file.write("\n".join(formatted))
         metadata.update({"score": score})
         metadata.update({"max": len(results)})
     return metadata
