@@ -210,11 +210,11 @@ def analyze(directory, filename, testcase, sensitive, loops, debug):
                     if found:
                         break
                     if key not in used:
-                        for search in csv(key)[0]:
+                        for search in csv(key)[0]:                      
+                            if sensitive == 0:
+                                line = line.lower()
                             if search in line:
-                                variable = line.split("=")[0]                               
-                                if sensitive == 0:
-                                    line = line.lower()
+                                variable = line.split("=")[0]     
                                 values = []
                                 for x in variable.split(","):
                                     try:
