@@ -210,16 +210,22 @@ def analyze(directory, filename, testcase, sensitive, loops, debug):
                     if found:
                         break
                     if key not in used:
-                        for search in csv(key)[0]:
+                        for search in csv(key)[0]:                      
+                            if sensitive == 0:
+                                line = line.lower()
                             if search in line:
-                                variable = line.split("=")[0]                               
-                                if sensitive == 0:
-                                    line = line.lower()
+                                variable = line.split("=")[0]     
                                 values = []
                                 for x in variable.split(","):
                                     try:
                                         next_key = list(keywords.keys())[keyword_index]
                                         next_value = keywords.get(next_key, 0)
+                                        if "int(input(" in next_value:
+                                            next_value = f"int({next_value})"
+                                        if "float(input(" in next_value:
+                                            next_value = f"float({next_value})"
+                                        if "str(input(" in next_value:
+                                            next_value = f"str({next_value})"
                                         values.append(next_value)
                                         used.append(next_key)
                                         keyword_index += 1

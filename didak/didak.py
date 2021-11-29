@@ -220,6 +220,12 @@ def analyze(directory, filename, testcase, sensitive, loops, debug):
                                     try:
                                         next_key = list(keywords.keys())[keyword_index]
                                         next_value = keywords.get(next_key, 0)
+                                        if "int(input(" in next_value:
+                                            next_value = f"int({next_value})"
+                                        if "float(input(" in next_value:
+                                            next_value = f"float({next_value})"
+                                        if "str(input(" in next_value:
+                                            next_value = f"str({next_value})"
                                         values.append(next_value)
                                         used.append(next_key)
                                         keyword_index += 1
