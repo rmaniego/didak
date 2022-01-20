@@ -14,7 +14,7 @@ from arkivist import Arkivist
 from maguro import Maguro
 import autopep8
 
-def didak(directory, testcase, identifier, sensitive=0, unzip=0, convert=0, loops=99, reset=0):
+def didak(directory, testcase, identifier, sensitive=1, unzip=0, convert=0, loops=99, reset=0):
     
     if not isinstance(directory, str):
         print("\nDidakError: 'directory' parameter must be a string.")
@@ -59,30 +59,30 @@ def didak(directory, testcase, identifier, sensitive=0, unzip=0, convert=0, loop
     if unzip == 1:
         files = get_filenames(directory, "zip")
         if len(files) > 0:
-            print("\nUnzipping files:")
             for filename in files:
-                print(f" - {filename}")
+                print(f" Unzipping {filename}...", end="\r")
                 extract(f"{directory}/{filename}", f"{directory}")
     
     if convert == 1:
         files = get_filenames(directory, "ipynb")
         if len(files) > 0:
-            print("\nConverting notebooks:")
             for filename in files:
-                print(f" - {filename}")
+                print(f" Converting {filename}...", end="\r")
                 ipynb2py(f"{directory}/{filename}")
-
-    print("\nAnalyzing files...")
     
     prev = ""
     if testcase_filename is not None:
         testcase_filename = testcase.split("/")[-1:][0]
-
+    
+    print("\n")
+    ellipsis = "...."
     analysis = Arkivist(f"{directory}/didak/analysis.json", sort=True)
     if reset == 1:
         analysis.clear()
     filenames = get_filenames(f"{directory}", "py")
     for filename in filenames:
+        ellipsis = loader(ellipsis)
+        print(f"Analyzing files{ellipsis}")
         if identifier == "" or identifier in filename:
             metadata = analyze(directory, filename, testcase, sensitive, loops, debug)
             analysis.set(filename, metadata)
@@ -495,6 +495,12 @@ def defaults(value, minimum, maximum, fallback):
             return fallback
         return value
     return fallback
+
+def loader(ellipsis):
+    ellipsis += "."
+    if len(ellipsis) > 3:
+        return "."
+    return ellipsis
 
 # file/folder io
 def get_folders(source):
