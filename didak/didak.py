@@ -76,9 +76,9 @@ def didak(directory, testcase, identifier, sensitive=1, unzip=0, convert=0, loop
     
     print("\n")
     ellipsis = "...."
-    analysis = Arkivist(f"{directory}/didak/analysis.json", sort=True)
+    analysis = Arkivist(f"{directory}/didak/analysis.json", autosort=True)
     if reset == 1:
-        analysis.clear()
+        analysis.reset()
     filenames = get_filenames(f"{directory}", "py")
     for filename in filenames:
         ellipsis = loader(ellipsis)
@@ -303,7 +303,7 @@ def ipynb2py(filepath):
             file.write("\n".join(script))
 
 def grader(directory, tolerance=60):
-    grades = Arkivist(f"{directory}/didak/grades.json", sort=True)
+    grades = Arkivist(f"{directory}/didak/grades.json", autosort=True)
     abero_analysis = Arkivist(f"{directory}/abero/analysis.json")
     didak_analysis = Arkivist(f"{directory}/didak/analysis.json")
     for filename in didak_analysis.keys():
@@ -316,7 +316,7 @@ def grader(directory, tolerance=60):
         
         items = 1
         counter = 0
-        for filename2, metadata2 in didak_analysis.show().items():
+        for filename2, metadata2 in didak_analysis.items():
             if filename != filename2:
                 if common == "":
                     temp = common_string(filename, filename2)

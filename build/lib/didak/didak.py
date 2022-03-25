@@ -82,7 +82,7 @@ def didak(directory, testcase, identifier, sensitive=1, unzip=0, convert=0, loop
     filenames = get_filenames(f"{directory}", "py")
     for filename in filenames:
         ellipsis = loader(ellipsis)
-        print(f"Analyzing files{ellipsis}")
+        print(f"Analyzing files{ellipsis}", end="\r")
         if identifier == "" or identifier in filename:
             metadata = analyze(directory, filename, testcase, sensitive, loops, debug)
             analysis.set(filename, metadata)
